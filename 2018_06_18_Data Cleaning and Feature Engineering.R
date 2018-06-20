@@ -1,11 +1,16 @@
 setwd("D:/NA/spreedsheet")
 
+install.packages('devtools')
+
 # install.packages("dplyr")
 library(tidyr)
 library(dplyr)
 library(tidyverse)
+library(tidycensus)
 library(sf)
 library(imputeTS)
+library(ggplot2)
+library(devtools)
 
 rawDC <- read.csv("OC Marine Debris Data for DC.csv")
 
@@ -872,7 +877,60 @@ summary(finalcombdata$TotalItemsCollected)
 # Write final data for display into one csv
 write.csv(finalcombdata,"finalcombdata.csv")
 
-#---------------------------------Exploratory Analysis----------------------------------------------
+
+#---------------------------------Display the data----------------------------------------------
+
+finalpoints <- st_read("D:/NA/WP/06_17_allpoints_dis2water.shp") %>% 
+  st_transform(3857)
+
+states <- st_read("D:/NA/WP/basemap/selectedstates.shp") %>% 
+  st_transform(3857)
+
+waterbody <- st_read("D:/NA/WP/basemap/slipwater_dissolve1.shp") %>% 
+  st_transform(3857)
+
+# !!!! don't plot this data
+# waterclip <- st_read("D:/NA/WP/waterclip_proj.shp")
+
+# Define plot theme
+plotTheme <- function(base_size = 24) {
+  theme(
+    text = element_text( color = "black"),
+    plot.title = element_text(size = 18,colour = "black"),
+    plot.subtitle = element_text(size = 12,face="italic", colour = "#477371", hjust = 0),
+    plot.caption = element_text(hjust=0),
+    axis.ticks = element_blank(),
+    panel.background = element_blank(),
+    panel.grid.major.y = element_line("#477371", size = 0.1),
+    panel.border = element_rect(colour = "#477371", fill=NA, size=1),
+    panel.grid.minor = element_blank(),
+    strip.background = element_blank(),
+    strip.text = element_text(size=10),
+    axis.title = element_text(size=8),
+    axis.text = element_text(size=8),
+    axis.title.y = element_text(size=12),
+    plot.background = element_blank(),
+    legend.background = element_blank(),
+    legend.title = element_text(colour = "black", face = "italic"),
+    legend.text = element_text(colour = "black", face = "italic"),
+    axis.ticks.y = element_line(color="grey70"),
+    axis.text.x =  element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.x = element_blank())
+}
+
+# basemap
+baseMap <- ggplot() + 
+  geom_sf(data=states, aes(), fill = "gray70", colour="darkgray", size = 0.5, alpha = 0.2) +
+  # geom_sf(data=streets, aes(), fill=NA, colour='white', size = 0.3,alpha=0.8) + 
+  geom_sf(data=waterbody, aes(), fill="white", colour = NA) +
+  # geom_sf(data=roads, aes(), fill=NA, colour='gray90', alpha = 0.8) +
+  # geom_sf(data=parks, aes(), fill="white", colour = NA, alpha = 0.9) +
+  # geom_sf(data=minneapolis, aes(), fill=NA, colour="darkgray", size = 0.3) +
+  # geom_sf(data=boundary, aes(), fill = NA, colour="darkgray", size = 0.5, alpha = 0.2) +
+  plotTheme()
+
+#---------------------------------Feature Engineering----------------------------------------------
 library(AppliedPredictiveModeling)
 library(randomForest)
 #library(popbio) #
